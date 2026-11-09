@@ -1,0 +1,1072 @@
+[
+  {
+    "id": "rule-workbook-001",
+    "name": "身體質量指數",
+    "condition": "24~29.99",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 0
+  },
+  {
+    "id": "rule-workbook-002",
+    "name": "身體質量指數",
+    "condition": "30~34.99",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 1
+  },
+  {
+    "id": "rule-workbook-003",
+    "name": "身體質量指數",
+    "condition": "35~1000",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 2
+  },
+  {
+    "id": "rule-workbook-004",
+    "name": "腰圍",
+    "condition": "90~99.99",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 3
+  },
+  {
+    "id": "rule-workbook-005",
+    "name": "腰圍",
+    "condition": "100~10000",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 4
+  },
+  {
+    "id": "rule-workbook-006",
+    "name": "收縮壓",
+    "condition": "120~129",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 5
+  },
+  {
+    "id": "rule-workbook-007",
+    "name": "收縮壓",
+    "condition": "130~139",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 6
+  },
+  {
+    "id": "rule-workbook-008",
+    "name": "收縮壓",
+    "condition": "140~159",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 7
+  },
+  {
+    "id": "rule-workbook-009",
+    "name": "收縮壓",
+    "condition": "160~1000",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 8
+  },
+  {
+    "id": "rule-workbook-010",
+    "name": "舒張壓",
+    "condition": "80~89",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 9
+  },
+  {
+    "id": "rule-workbook-011",
+    "name": "舒張壓",
+    "condition": "90~99",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 10
+  },
+  {
+    "id": "rule-workbook-012",
+    "name": "舒張壓",
+    "condition": "100~109",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 11
+  },
+  {
+    "id": "rule-workbook-013",
+    "name": "舒張壓",
+    "condition": "110~1000",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 12
+  },
+  {
+    "id": "rule-workbook-014",
+    "name": "矯正(右眼)",
+    "condition": "0~0.6",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 13
+  },
+  {
+    "id": "rule-workbook-015",
+    "name": "矯正(左眼)",
+    "condition": "0~0.6",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 14
+  },
+  {
+    "id": "rule-workbook-016",
+    "name": "辨色力",
+    "condition": "異常",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 15
+  },
+  {
+    "id": "rule-workbook-017",
+    "name": "辨色力",
+    "condition": "色弱",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 16
+  },
+  {
+    "id": "rule-workbook-018",
+    "name": "辨色力",
+    "condition": "紅綠色弱",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 17
+  },
+  {
+    "id": "rule-workbook-019",
+    "name": "白血球",
+    "condition": "0~3.99",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 18
+  },
+  {
+    "id": "rule-workbook-020",
+    "name": "白血球",
+    "condition": "9~11.99",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 19
+  },
+  {
+    "id": "rule-workbook-021",
+    "name": "白血球",
+    "condition": "12~14.99",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 20
+  },
+  {
+    "id": "rule-workbook-022",
+    "name": "白血球",
+    "condition": "15~19.99",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 21
+  },
+  {
+    "id": "rule-workbook-023",
+    "name": "白血球",
+    "condition": "20~1000",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 22
+  },
+  {
+    "id": "rule-workbook-024",
+    "name": "血紅素",
+    "condition": "0~6.99",
+    "level": 4,
+    "sex": "male",
+    "enabled": true,
+    "type": "number",
+    "order": 23
+  },
+  {
+    "id": "rule-workbook-025",
+    "name": "血紅素",
+    "condition": "7~9.99",
+    "level": 3,
+    "sex": "male",
+    "enabled": true,
+    "type": "number",
+    "order": 24
+  },
+  {
+    "id": "rule-workbook-026",
+    "name": "血紅素",
+    "condition": "10~11.99",
+    "level": 2,
+    "sex": "male",
+    "enabled": true,
+    "type": "number",
+    "order": 25
+  },
+  {
+    "id": "rule-workbook-027",
+    "name": "血紅素",
+    "condition": "12~13",
+    "level": 1,
+    "sex": "male",
+    "enabled": true,
+    "type": "number",
+    "order": 26
+  },
+  {
+    "id": "rule-workbook-028",
+    "name": "血紅素",
+    "condition": "0~5.99",
+    "level": 4,
+    "sex": "female",
+    "enabled": true,
+    "type": "number",
+    "order": 27
+  },
+  {
+    "id": "rule-workbook-029",
+    "name": "血紅素",
+    "condition": "6~8.99",
+    "level": 3,
+    "sex": "female",
+    "enabled": true,
+    "type": "number",
+    "order": 28
+  },
+  {
+    "id": "rule-workbook-030",
+    "name": "血紅素",
+    "condition": "9~10.99",
+    "level": 2,
+    "sex": "female",
+    "enabled": true,
+    "type": "number",
+    "order": 29
+  },
+  {
+    "id": "rule-workbook-031",
+    "name": "血紅素",
+    "condition": "11~12",
+    "level": 1,
+    "sex": "female",
+    "enabled": true,
+    "type": "number",
+    "order": 30
+  },
+  {
+    "id": "rule-workbook-032",
+    "name": "丙胺酸轉胺酶",
+    "condition": "41~79",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 31
+  },
+  {
+    "id": "rule-workbook-033",
+    "name": "丙胺酸轉胺酶",
+    "condition": "80~99",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 32
+  },
+  {
+    "id": "rule-workbook-034",
+    "name": "丙胺酸轉胺酶",
+    "condition": "100~299",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 33
+  },
+  {
+    "id": "rule-workbook-035",
+    "name": "丙胺酸轉胺酶",
+    "condition": "300~1000",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 34
+  },
+  {
+    "id": "rule-workbook-036",
+    "name": "肌酸酐",
+    "condition": "1.3~1.49",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 35
+  },
+  {
+    "id": "rule-workbook-037",
+    "name": "肌酸酐",
+    "condition": "1.5~1.79",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 36
+  },
+  {
+    "id": "rule-workbook-038",
+    "name": "肌酸酐",
+    "condition": "1.8~1.99",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 37
+  },
+  {
+    "id": "rule-workbook-039",
+    "name": "肌酸酐",
+    "condition": "2~30",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 38
+  },
+  {
+    "id": "rule-workbook-040",
+    "name": "總膽固醇",
+    "condition": "200~249",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 39
+  },
+  {
+    "id": "rule-workbook-041",
+    "name": "總膽固醇",
+    "condition": "250~299",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 40
+  },
+  {
+    "id": "rule-workbook-042",
+    "name": "總膽固醇",
+    "condition": "300~349",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 41
+  },
+  {
+    "id": "rule-workbook-043",
+    "name": "總膽固醇",
+    "condition": "350~10000",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 42
+  },
+  {
+    "id": "rule-workbook-044",
+    "name": "三酸甘油脂",
+    "condition": "150~179",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 43
+  },
+  {
+    "id": "rule-workbook-045",
+    "name": "三酸甘油脂",
+    "condition": "180~199",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 44
+  },
+  {
+    "id": "rule-workbook-046",
+    "name": "三酸甘油脂",
+    "condition": "200~499",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 45
+  },
+  {
+    "id": "rule-workbook-047",
+    "name": "三酸甘油脂",
+    "condition": "500~1500",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 46
+  },
+  {
+    "id": "rule-workbook-048",
+    "name": "高密度脂蛋白",
+    "condition": "0~29",
+    "level": 4,
+    "sex": "male",
+    "enabled": true,
+    "type": "number",
+    "order": 47
+  },
+  {
+    "id": "rule-workbook-049",
+    "name": "高密度脂蛋白",
+    "condition": "30~39",
+    "level": 3,
+    "sex": "male",
+    "enabled": true,
+    "type": "number",
+    "order": 48
+  },
+  {
+    "id": "rule-workbook-050",
+    "name": "高密度脂蛋白",
+    "condition": "0~39",
+    "level": 4,
+    "sex": "female",
+    "enabled": true,
+    "type": "number",
+    "order": 49
+  },
+  {
+    "id": "rule-workbook-051",
+    "name": "高密度脂蛋白",
+    "condition": "40~49",
+    "level": 3,
+    "sex": "female",
+    "enabled": true,
+    "type": "number",
+    "order": 50
+  },
+  {
+    "id": "rule-workbook-052",
+    "name": "低密度脂蛋白",
+    "condition": "136~159",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 51
+  },
+  {
+    "id": "rule-workbook-053",
+    "name": "低密度脂蛋白",
+    "condition": "160~199",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 52
+  },
+  {
+    "id": "rule-workbook-054",
+    "name": "低密度脂蛋白",
+    "condition": "200~249",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 53
+  },
+  {
+    "id": "rule-workbook-055",
+    "name": "低密度脂蛋白",
+    "condition": "250~1000",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 54
+  },
+  {
+    "id": "rule-workbook-056",
+    "name": "空腹血糖",
+    "condition": "100~125",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 55
+  },
+  {
+    "id": "rule-workbook-057",
+    "name": "空腹血糖",
+    "condition": "126~139",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 56
+  },
+  {
+    "id": "rule-workbook-058",
+    "name": "空腹血糖",
+    "condition": "140~299",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 57
+  },
+  {
+    "id": "rule-workbook-059",
+    "name": "空腹血糖",
+    "condition": "300~1000",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 58
+  },
+  {
+    "id": "rule-workbook-060",
+    "name": "糖化血色素",
+    "condition": "5.6~5.79",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 59
+  },
+  {
+    "id": "rule-workbook-061",
+    "name": "糖化血色素",
+    "condition": "5.8~5.99",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 60
+  },
+  {
+    "id": "rule-workbook-062",
+    "name": "糖化血色素",
+    "condition": "6~6.49",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 61
+  },
+  {
+    "id": "rule-workbook-063",
+    "name": "糖化血色素",
+    "condition": "6.5~50",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 62
+  },
+  {
+    "id": "rule-workbook-064",
+    "name": "尿蛋白",
+    "condition": "+",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 63
+  },
+  {
+    "id": "rule-workbook-065",
+    "name": "尿蛋白",
+    "condition": "+-",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 64
+  },
+  {
+    "id": "rule-workbook-066",
+    "name": "尿蛋白",
+    "condition": "+/-",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 65
+  },
+  {
+    "id": "rule-workbook-067",
+    "name": "尿蛋白",
+    "condition": "1+",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 66
+  },
+  {
+    "id": "rule-workbook-068",
+    "name": "尿蛋白",
+    "condition": "1+ (30)",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 67
+  },
+  {
+    "id": "rule-workbook-069",
+    "name": "尿蛋白",
+    "condition": "10 男g/dL (+/-)",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 68
+  },
+  {
+    "id": "rule-workbook-070",
+    "name": "尿蛋白",
+    "condition": "20 男g/dL (+/-)",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 69
+  },
+  {
+    "id": "rule-workbook-071",
+    "name": "尿蛋白",
+    "condition": "30 男g/dL (1+)",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 70
+  },
+  {
+    "id": "rule-workbook-072",
+    "name": "尿蛋白",
+    "condition": "50 男g/dL (1+)",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 71
+  },
+  {
+    "id": "rule-workbook-073",
+    "name": "尿蛋白",
+    "condition": "微量",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 72
+  },
+  {
+    "id": "rule-workbook-074",
+    "name": "尿蛋白",
+    "condition": "15 男g/dL (+/-)",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 73
+  },
+  {
+    "id": "rule-workbook-075",
+    "name": "尿蛋白",
+    "condition": "2+ (100)",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 74
+  },
+  {
+    "id": "rule-workbook-076",
+    "name": "尿蛋白",
+    "condition": "Trace (15)",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 75
+  },
+  {
+    "id": "rule-workbook-077",
+    "name": "尿蛋白",
+    "condition": "30(1+)",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 76
+  },
+  {
+    "id": "rule-workbook-078",
+    "name": "尿潛血",
+    "condition": "+/-",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 77
+  },
+  {
+    "id": "rule-workbook-079",
+    "name": "尿潛血",
+    "condition": "+",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 78
+  },
+  {
+    "id": "rule-workbook-080",
+    "name": "尿潛血",
+    "condition": "+-",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 79
+  },
+  {
+    "id": "rule-workbook-081",
+    "name": "尿潛血",
+    "condition": "陽性",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 80
+  },
+  {
+    "id": "rule-workbook-082",
+    "name": "尿潛血",
+    "condition": "1+",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 81
+  },
+  {
+    "id": "rule-workbook-083",
+    "name": "尿潛血",
+    "condition": "2+",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 82
+  },
+  {
+    "id": "rule-workbook-084",
+    "name": "尿潛血",
+    "condition": "++",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 83
+  },
+  {
+    "id": "rule-workbook-085",
+    "name": "尿潛血",
+    "condition": "3+",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 84
+  },
+  {
+    "id": "rule-workbook-086",
+    "name": "尿潛血",
+    "condition": "4+",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 85
+  },
+  {
+    "id": "rule-workbook-087",
+    "name": "尿潛血",
+    "condition": "0.03",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 86
+  },
+  {
+    "id": "rule-workbook-088",
+    "name": "尿潛血",
+    "condition": "Trace",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 87
+  },
+  {
+    "id": "rule-workbook-089",
+    "name": "胸部X光",
+    "condition": "肺紋增加",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 88
+  },
+  {
+    "id": "rule-workbook-090",
+    "name": "胸部X光",
+    "condition": "鈣化",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 89
+  },
+  {
+    "id": "rule-workbook-091",
+    "name": "胸部X光",
+    "condition": "纖維化",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 90
+  },
+  {
+    "id": "rule-workbook-092",
+    "name": "胸部X光",
+    "condition": "小結節",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 91
+  },
+  {
+    "id": "rule-workbook-093",
+    "name": "胸部X光",
+    "condition": "結節",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 92
+  },
+  {
+    "id": "rule-workbook-094",
+    "name": "胸部X光",
+    "condition": "陰影",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 93
+  },
+  {
+    "id": "rule-workbook-095",
+    "name": "胸部X光",
+    "condition": "肺結核",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 94
+  },
+  {
+    "id": "rule-workbook-096",
+    "name": "胸部X光",
+    "condition": "氣胸",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 95
+  },
+  {
+    "id": "rule-workbook-097",
+    "name": "胸部X光",
+    "condition": "腫瘤",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 96
+  },
+  {
+    "id": "rule-workbook-098",
+    "name": "胸部X光",
+    "condition": "肺積水",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 97
+  },
+  {
+    "id": "rule-workbook-099",
+    "name": "尿酸",
+    "condition": "7.5~8.49",
+    "level": 1,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 98
+  },
+  {
+    "id": "rule-workbook-100",
+    "name": "尿酸",
+    "condition": "8.5~9.9",
+    "level": 2,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 99
+  },
+  {
+    "id": "rule-workbook-101",
+    "name": "尿酸",
+    "condition": "10~13.9",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 100
+  },
+  {
+    "id": "rule-workbook-102",
+    "name": "尿酸",
+    "condition": "14~100",
+    "level": 4,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 101
+  },
+  {
+    "id": "rule-workbook-103",
+    "name": "既往病史",
+    "condition": "心肌梗塞",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 102
+  },
+  {
+    "id": "rule-workbook-104",
+    "name": "既往病史",
+    "condition": "心臟衰竭",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 103
+  },
+  {
+    "id": "rule-workbook-105",
+    "name": "既往病史",
+    "condition": "心導管支架",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "text",
+    "order": 104
+  },
+  {
+    "id": "rule-workbook-106",
+    "name": "促甲狀腺素",
+    "condition": "0~0.4",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 105
+  },
+  {
+    "id": "rule-workbook-107",
+    "name": "促甲狀腺素",
+    "condition": "4.2~1000",
+    "level": 3,
+    "sex": "all",
+    "enabled": true,
+    "type": "number",
+    "order": 106
+  }
+]

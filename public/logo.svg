@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">職健導航</title>
+  <desc id="desc">職健導航綠色健康徽章</desc>
+  <defs>
+    <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8f1d7"/>
+      <stop offset="1" stop-color="#e2c878"/>
+    </linearGradient>
+  </defs>
+  <rect x="13" y="13" width="230" height="230" rx="35" fill="url(#badge)" stroke="#c5973f" stroke-width="7"/>
+  <circle cx="128" cy="128" r="82" fill="#0b5360" stroke="#fdf8e8" stroke-width="7"/>
+  <circle cx="128" cy="128" r="64" fill="#d9e9c9" stroke="#c5973f" stroke-width="5"/>
+  <path d="M128 76 174 94v32c0 30-19 53-46 66-27-13-46-36-46-66V94l46-18Z" fill="#0f776e" stroke="#f8f1d7" stroke-width="5"/>
+  <path d="M128 99v57M99 128h58" fill="none" stroke="#fffdf0" stroke-width="11" stroke-linecap="round"/>
+  <circle cx="128" cy="128" r="13" fill="#c5973f"/>
+</svg>
