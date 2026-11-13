@@ -25,6 +25,17 @@ npm run build
 
 接著在 Cloudflare Pages 建立專案時，選擇 **Direct Upload**，上傳整個 `dist` 資料夾。
 
+
+## 自動化測試
+
+本專案使用 Node.js 內建測試執行器，測試檔位於 `tests/healthgrade-core.test.js`，並與 `src/healthgrade-core.js` 共用實際使用的核心邏輯。測試涵蓋數值解析、小數點一位四捨五入、區間與單邊條件、邊界重疊、欄名別名、序號去重，以及 Framingham 必要欄位與年齡範圍檢核。
+
+```bash
+npm install
+npm run test
+npm run build
+```
+
 ## 本機測試
 
 ```bash

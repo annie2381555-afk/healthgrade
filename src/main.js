@@ -1,8 +1,11 @@
 import * as XLSX from 'xlsx-js-style';
 import initialRules from './rules.json';
+import { headersMatch, normalizeHeader, parseNumber, parseRange, rangesOverlap, roundOneDecimal, serialKey, uniqueSerialCount, validNumericCondition, calculateFramingham, riskCategory } from './healthgrade-core.js';
 import './styles.css';
 
 const app = document.querySelector('#root');
+const APP_VERSION = '0.3.2';
+const LAST_UPDATED = '2026 年 11 月 13 日';
 const levelLabels = { 1: '低', 2: '中', 3: '高', 4: '嚴重' };
 const REFERENCE_BASE_COLUMNS = ['序號', '性別', '年齡', '糖尿病', '吸菸', '檳榔', '身高', '體重', 'BMI', '腰圍', '收縮壓', '舒張壓', '矯正右', '矯正左', '辨色力', '白血球', '血紅素', 'SGPT', '肌酸酐', '總膽固醇', '三酸甘油脂', '高密度膽固醇', '低密度膽固醇', '飯前血糖', '糖化血色素', '尿酸', '尿蛋白', '尿潛血', '胸部X光', '640切心臟'];
 const REFERENCE_GRADE_COLUMNS = ['既往病史', '家族史', ...REFERENCE_BASE_COLUMNS.slice(8)];
@@ -172,7 +175,7 @@ function render() {
         <nav class="nav"><a class="nav-item nav-overview ${state.view === 'overview' ? 'active' : ''}" data-view="overview" href="#overview">${icon.chart}<span class="nav-label">總表</span></a><div class="nav-divider"><span>工作流程</span></div><a class="nav-item nav-step-item ${state.view === 'rules' ? 'active' : ''}" data-view="rules" href="#rules">${icon.sliders}<span class="nav-step-no">Step 1.</span><span class="nav-label">分級規則</span></a><a class="nav-item nav-step-item ${state.view === 'import' ? 'active' : ''}" data-view="import" href="#import">${icon.upload}<span class="nav-step-no">Step 2.</span><span class="nav-copy"><span class="nav-label">匯入健檢報告</span><span class="nav-state ${statusClass(state.uploadStatus)}">${uploadStatusText()}</span></span></a><a class="nav-item nav-step-item ${state.view === 'results' ? 'active' : ''}" data-view="results" href="#results">${icon.chart}<span class="nav-step-no">Step 3.</span><span class="nav-copy"><span class="nav-label">分級結果</span><span class="nav-state ${statusClass(state.uploadStatus === 'uploading' ? 'uploading' : (state.uploadStatus === 'success' ? 'success' : 'empty'))}">${resultStatusText()}</span></span></a></nav>
         <div class="sidebar-note"><div class="note-icon">${icon.shield}</div><strong>資料不離開您的裝置</strong><p>報告只在瀏覽器記憶體中處理，不上傳、不建檔。</p></div>
         ${renderAdSlot('sidebar')}
-        <div class="sidebar-footer">v0.3 本機原型<br /><span>規則由使用者自行確認</span><button class="privacy-link" id="privacyPolicy">隱私權與使用說明</button></div>
+        <div class="sidebar-footer">${APP_VERSION} 本機原型<br /><span>最後更新：${LAST_UPDATED}　規則由使用者自行確認</span><button class="privacy-link" id="privacyPolicy">隱私權與使用說明</button></div>
       </aside>
       <main class="main">
         <header class="topbar"><div class="topbar-breadcrumb"><span>職健導航</span></div><div class="topbar-main"><div><div class="eyebrow">OCCUPATIONAL HEALTH MANAGEMENT</div><h1>${currentViewLabel()}</h1><p class="subtitle">把報告轉成可追蹤的分級結果，保留規則調整權，資料全程留在本機。</p></div><div class="top-actions"><span class="topbar-date">${currentDateLabel()}　<span id="liveClock">${currentClock()}</span></span><span class="secure-label">${icon.shield} 不連線處理</span></div></div></header>
@@ -192,8 +195,7 @@ function renderView(conflictCount, levelCount) {
 }
 
 function importedRowsWithSerial() { return state.sourceRows.filter((row) => String(row['序號'] ?? '').trim() !== ''); }
-function serialKey(row) { return String(row['序號'] ?? '').trim().replace(/\s+/g, '').toUpperCase(); }
-function importedSerialCount() { return new Set(importedRowsWithSerial().map(serialKey)).size; }
+function importedSerialCount() { return uniqueSerialCount(state.sourceRows); }
 
 function renderDashboard(levelCount) {
   const importedCount = importedSerialCount();
@@ -201,7 +203,7 @@ function renderDashboard(levelCount) {
 }
 
 function renderPrivacyModal() {
-  return `<div class="privacy-modal" id="privacyModal" hidden><div class="privacy-backdrop" data-close-privacy></div><section class="privacy-dialog" role="dialog" aria-modal="true" aria-labelledby="privacyTitle"><button class="privacy-close" data-close-privacy aria-label="關閉隱私權說明">×</button><div class="section-kicker">PRIVACY & USE</div><h2 id="privacyTitle">隱私權與使用說明</h2><p class="privacy-updated">最後更新：2026 年 11 月 5 日</p><div class="privacy-content"><h3>一、適用範圍與服務定位</h3><p>「職健導航」是提供職護人員使用的純前端健檢資料分級、統計與 Excel 匯出輔助工具。本工具不是醫療機構、電子病歷系統、正式健檢資料庫或醫療診斷服務。使用本工具即表示您已閱讀本說明，並同意依組織規範與適用法令使用。</p><h3>二、健檢資料如何處理</h3><p>您選取的 Excel 會由目前瀏覽器在本機記憶體中讀取、分析、分級與匯出。本工具不主動將 Excel 內容、姓名、身分證字號、工號、健檢數值或分級結果上傳至本工具的應用程式伺服器，也不建立健檢資料庫。請先完成個資去識別化，再上傳檔案至平台進行分級。</p><h3>三、資料保存與刪除</h3><p>本次健檢資料只在目前瀏覽器工作階段中使用；重新上傳檔案會取代目前分析結果，關閉或重新整理頁面後，本工具不提供本次資料的永久保存或復原功能。請使用者自行管理下載到電腦的 Excel 檔案、瀏覽器下載紀錄、暫存檔、備份檔與螢幕截圖。分級規則修改、新增或刪除後不會自動保存；需要保留時，請自行下載 Excel 備份。</p><h3>四、網站託管與技術性紀錄</h3><p>雖然健檢 Excel 由瀏覽器本機處理，公開網站的託管、CDN、DNS、安全防護或錯誤監控服務仍可能依其政策產生一般技術性紀錄，例如 IP 位址、連線時間、瀏覽器類型、裝置資訊、請求網址與安全事件紀錄。這些網站連線紀錄不等同於本工具主動收集健檢內容；實際保存期間與處理方式仍以相關託管服務商政策為準。</p><h3>五、Cookie、廣告與第三方服務</h3><p>目前頁面僅保留非干擾性廣告版位，未在本工具程式中放入健檢資料追蹤機制。若日後啟用 Google AdSense、分析工具、Cookie 或其他第三方服務，該服務可能依其自身政策處理 IP、Cookie、裝置、瀏覽與廣告成效資料；啟用前應更新本說明、提供必要的告知與選擇機制，並依服務地區要求完成設定。第三方服務不應取得使用者匯入的 Excel 內容。</p><h3>六、使用者義務與誤傳個資</h3><p>使用者應在匯入前完成去識別化、確認已取得組織授權，並確認檔案不含不必要的姓名、身分證字號、工號、電話、地址、病歷號或其他可直接識別個人的資訊。若使用者自行匯入、下載、保存、分享或公開含有真實個資的檔案，使用者仍須依其身分、組織政策及適用法令負責處理；首頁告知並不等於對使用者違法或不當處理個資的豁免。若發生誤傳，請立即停止分享、刪除相關檔案與下載副本，並依所屬組織的個資事件通報流程處理。</p><h3>七、分級與醫療責任限制</h3><p>分級規則、公開門檻、腦心血管風險模型與統計結果可能因資料品質、欄位名稱、規則設定、版本或模型限制而產生差異。本工具僅供篩檢與工作流程輔助，不提供疾病診斷、治療建議或正式醫療判定；所有結果均須由合格職護、職醫或相關專業人員查核，不得直接作為醫療決策、雇用決策或其他重大人身決策的唯一依據。</p><h3>八、資訊安全與使用限制</h3><p>本工具採瀏覽器本機處理，但使用者仍須自行維護裝置、瀏覽器、下載資料夾、備份檔與帳號環境的安全。請勿在共用電腦留下未加密的健檢檔案，也請勿將去識別化不足的檔案寄送或分享給未授權人員。網站提供者不保證所有瀏覽器、檔案格式、網路環境或第三方託管服務永遠不中斷或完全無錯誤。</p><h3>九、規則與說明更新</h3><p>網站可能因功能、分級規則、公開健康門檻、風險模型、託管服務或法規需求而更新。更新後會調整版本內容與本頁最後更新日期；使用者在正式工作流程中採用結果前，應確認目前版本是否經組織核准與專業覆核。</p><h3>十、聯絡與法律檢視</h3><p>若您代表公司、醫療院所或健檢機構使用，請由組織指定窗口處理個資、資安與醫療責任問題。本頁是網站公開使用說明，不構成法律意見，也不取代個資盤點、委外契約、資安評估、事件通報計畫或正式隱私權政策；正式對外營運前，建議依服務地區、託管商、廣告設定與實際營運主體，請個資或法律專業人士檢視。</p><h3>十一、免費服務與使用條款</h3><p>本工具目前提供免費使用，網站可能透過廣告版位維持營運；免費使用不代表網站提供任何醫療保證、資料保存、特定可用性或不間斷服務承諾。使用者不得以本工具取代專業判斷，不得故意上傳、公開、分享未完成去識別化的資料，不得以干擾網站、繞過安全機制、濫用自動化請求或其他違法方式使用本服務。網站提供者得因維護、資安、法規、第三方服務或功能更新而暫停、調整或停止部分功能。使用者應自行確認匯入資料、規則設定、結果解讀與下載檔案的正確性，並承擔其組織授權、資料管理及工作決策責任。</p><p class="privacy-disclaimer">使用前請確認：已完成個資去識別化、具備必要授權、理解本工具僅供工作輔助，並會由合格職護／職醫人工覆核結果。</p></div></section></div>`;
+  return `<div class="privacy-modal" id="privacyModal" hidden><div class="privacy-backdrop" data-close-privacy></div><section class="privacy-dialog" role="dialog" aria-modal="true" aria-labelledby="privacyTitle"><button class="privacy-close" data-close-privacy aria-label="關閉隱私權說明">×</button><div class="section-kicker">PRIVACY & USE</div><h2 id="privacyTitle">隱私權與使用說明</h2><p class="privacy-updated">最後更新：${LAST_UPDATED}</p><div class="privacy-content"><h3>一、適用範圍與服務定位</h3><p>「職健導航」是提供職護人員使用的純前端健檢資料分級、統計與 Excel 匯出輔助工具。本工具不是醫療機構、電子病歷系統、正式健檢資料庫或醫療診斷服務。使用本工具即表示您已閱讀本說明，並同意依組織規範與適用法令使用。</p><h3>二、健檢資料如何處理</h3><p>您選取的 Excel 會由目前瀏覽器在本機記憶體中讀取、分析、分級與匯出。本工具不主動將 Excel 內容、姓名、身分證字號、工號、健檢數值或分級結果上傳至本工具的應用程式伺服器，也不建立健檢資料庫。請先完成個資去識別化，再上傳檔案至平台進行分級。</p><h3>三、資料保存與刪除</h3><p>本次健檢資料只在目前瀏覽器工作階段中使用；重新上傳檔案會取代目前分析結果，關閉或重新整理頁面後，本工具不提供本次資料的永久保存或復原功能。請使用者自行管理下載到電腦的 Excel 檔案、瀏覽器下載紀錄、暫存檔、備份檔與螢幕截圖。分級規則修改、新增或刪除後不會自動保存；需要保留時，請自行下載 Excel 備份。</p><h3>四、網站託管與技術性紀錄</h3><p>本網站可能啟用 Cloudflare Web Analytics，以了解網站訪問量、頁面瀏覽與頁面效能。該分析服務與健檢資料處理流程分離；本工具不會將使用者匯入的 Excel、健檢數值、分級結果或規則內容提供給分析服務。Cloudflare Web Analytics 的實際技術處理、保存期間與隱私作法，仍以 Cloudflare 最新公開政策與設定為準。<br />雖然健檢 Excel 由瀏覽器本機處理，公開網站的託管、CDN、DNS、安全防護或錯誤監控服務仍可能依其政策產生一般技術性紀錄，例如 IP 位址、連線時間、瀏覽器類型、裝置資訊、請求網址與安全事件紀錄。這些網站連線紀錄不等同於本工具主動收集健檢內容；實際保存期間與處理方式仍以相關託管服務商政策為準。</p><h3>五、Cookie、廣告與第三方服務</h3><p>Cloudflare Web Analytics 可能透過頁面分析程式收集網站瀏覽與效能指標；若您不希望使用此類分析，請依網站或瀏覽器提供的設定與告知選項處理。<br />目前頁面僅保留非干擾性廣告版位，未在本工具程式中放入健檢資料追蹤機制。若日後啟用 Google AdSense、分析工具、Cookie 或其他第三方服務，該服務可能依其自身政策處理 IP、Cookie、裝置、瀏覽與廣告成效資料；啟用前應更新本說明、提供必要的告知與選擇機制，並依服務地區要求完成設定。第三方服務不應取得使用者匯入的 Excel 內容。</p><h3>六、使用者義務與誤傳個資</h3><p>使用者應在匯入前完成去識別化、確認已取得組織授權，並確認檔案不含不必要的姓名、身分證字號、工號、電話、地址、病歷號或其他可直接識別個人的資訊。若使用者自行匯入、下載、保存、分享或公開含有真實個資的檔案，使用者仍須依其身分、組織政策及適用法令負責處理；首頁告知並不等於對使用者違法或不當處理個資的豁免。若發生誤傳，請立即停止分享、刪除相關檔案與下載副本，並依所屬組織的個資事件通報流程處理。</p><h3>七、分級與醫療責任限制</h3><p>分級規則、公開門檻、腦心血管風險模型與統計結果可能因資料品質、欄位名稱、規則設定、版本或模型限制而產生差異。本工具僅供篩檢與工作流程輔助，不提供疾病診斷、治療建議或正式醫療判定；所有結果均須由合格職護、職醫或相關專業人員查核，不得直接作為醫療決策、雇用決策或其他重大人身決策的唯一依據。</p><h3>八、資訊安全與使用限制</h3><p>本工具採瀏覽器本機處理，但使用者仍須自行維護裝置、瀏覽器、下載資料夾、備份檔與帳號環境的安全。請勿在共用電腦留下未加密的健檢檔案，也請勿將去識別化不足的檔案寄送或分享給未授權人員。網站提供者不保證所有瀏覽器、檔案格式、網路環境或第三方託管服務永遠不中斷或完全無錯誤。</p><h3>九、規則與說明更新</h3><p>網站可能因功能、分級規則、公開健康門檻、風險模型、託管服務或法規需求而更新。更新後會調整版本內容與本頁最後更新日期；使用者在正式工作流程中採用結果前，應確認目前版本是否經組織核准與專業覆核。</p><h3>十、聯絡與法律檢視</h3><p>若您代表公司、醫療院所或健檢機構使用，請由組織指定窗口處理個資、資安與醫療責任問題。本頁是網站公開使用說明，不構成法律意見，也不取代個資盤點、委外契約、資安評估、事件通報計畫或正式隱私權政策；正式對外營運前，建議依服務地區、託管商、廣告設定與實際營運主體，請個資或法律專業人士檢視。</p><h3>十一、免費服務與使用條款</h3><p>本工具目前提供免費使用，網站可能透過廣告版位維持營運；免費使用不代表網站提供任何醫療保證、資料保存、特定可用性或不間斷服務承諾。使用者不得以本工具取代專業判斷，不得故意上傳、公開、分享未完成去識別化的資料，不得以干擾網站、繞過安全機制、濫用自動化請求或其他違法方式使用本服務。網站提供者得因維護、資安、法規、第三方服務或功能更新而暫停、調整或停止部分功能。使用者應自行確認匯入資料、規則設定、結果解讀與下載檔案的正確性，並承擔其組織授權、資料管理及工作決策責任。</p><p class="privacy-disclaimer">使用前請確認：已完成個資去識別化、具備必要授權、理解本工具僅供工作輔助，並會由合格職護／職醫人工覆核結果。</p></div></section></div>`;
 }
 function renderNoticeModal() {
   if (!state.notice) return '';
@@ -349,37 +351,6 @@ function renderAddRuleModal() {
   return `<div class="rule-group-modal"><div class="rule-group-backdrop" data-cancel-add-rule></div><section class="rule-group-dialog add-rule-dialog" role="dialog" aria-modal="true"><button class="privacy-close" data-cancel-add-rule aria-label="取消新增規則">×</button><div class="section-kicker">NEW RULE</div><h2>新增分級規則</h2><div class="add-rule-form"><label>項目名稱<input id="newRuleName" value="${esc(draft.name)}" placeholder="例如 收縮壓" /></label><label>條件類型<select id="newRuleType"><option value="number" ${draft.type === 'number' ? 'selected' : ''}>數字</option><option value="text" ${draft.type === 'text' ? 'selected' : ''}>文字</option></select></label></div><label class="rule-alias-editor new-rule-alias-editor">可替代名稱<small>請以逗號分隔，例如：Hb, hemoglobin, 血色素。匯入時會自動對應為此項目。</small><input id="newRuleAliases" class="edit-white-field" value="${esc(draft.aliases)}" placeholder="例如 Hb, hemoglobin, 血色素" /></label><div class="new-rule-hint">每列可選擇「不限性別、男性或女性」；選擇男性／女性後，分級時會先配對匯入資料的性別。項目名稱僅可使用中文、英文或數字；文字條件不限制字數，例如 異常、正常、小結節，但完全相同的文字不可重複。數字可填寫「數值~數值」、&lt;數值或&gt;數值，例如 130~139、&lt;0.0001、&gt;2。</div><div class="new-rule-count"><span>分級條件（${draft.levelCount} 個）</span></div><div class="new-rule-rows">${draft.conditions.slice(0, draft.levelCount).map((item, index) => `<div class="new-rule-row"><input class="new-rule-condition" data-index="${index}" value="${esc(item.condition)}" placeholder="${draft.type === 'number' ? `例如 130~139、<0.0001 或 >2` : `例如 ${['異常', '正常', '小結節', '其他'][index] || '其他'}`}" /><select class="new-rule-level" data-index="${index}">${levels.map((level) => `<option value="${level}" ${item.level === level ? 'selected' : ''}>${level} · ${levelLabels[level]}</option>`).join('')}</select><select class="new-rule-sex" data-index="${index}"><option value="all" ${(!item.sex || item.sex === 'all') ? 'selected' : ''}>不限性別</option><option value="male" ${item.sex === 'male' ? 'selected' : ''}>男性</option><option value="female" ${item.sex === 'female' ? 'selected' : ''}>女性</option></select><div class="new-rule-row-actions"><button type="button" class="count-btn" data-adjust-rule-row="${index},-1" ${draft.levelCount <= 1 ? 'disabled' : ''} aria-label="刪除第${index + 1}項條件">−</button><button type="button" class="count-btn" data-adjust-rule-row="${index},1" ${draft.levelCount >= 4 ? 'disabled' : ''} aria-label="在第${index + 1}項後新增條件">＋</button></div></div>`).join('')}</div><div class="add-rule-actions"><button class="btn btn-ghost" data-cancel-add-rule>取消</button><button class="btn btn-primary" id="confirmAddRule">確認新增</button></div></section></div>`;
 }
 
-const NTUH_FRAMINGHAM = {
-  男性: { age: 3.06117, totalCholesterol: 1.12370, hdl: -0.93263, systolicUntreated: 1.93303, systolicTreated: 1.99881, smoking: 0.65451, diabetes: 0.57367, survival: 0.88936, mean: 23.9802 },
-  女性: { age: 2.32888, totalCholesterol: 1.20904, hdl: -0.70833, systolicUntreated: 2.76157, systolicTreated: 2.82263, smoking: 0.52873, diabetes: 0.69154, survival: 0.95012, mean: 26.1931 }
-};
-
-function riskCategory(percent, diabetes = false) {
-  if (diabetes || percent > 20) return '高危險';
-  if (percent >= 10) return '中度危險';
-  return '低危險';
-}
-
-function calculateFramingham(r) {
-  const age = Number(r.age); const total = Number(r.totalCholesterol); const hdl = Number(r.hdl); const systolic = Number(r.systolic);
-  const blank = (value) => value === undefined || value === null || String(value).trim() === '';
-  const missing = [];
-  if (!['女性', '男性'].includes(r.sex)) missing.push('性別');
-  if (blank(r.age) || !Number.isFinite(age)) missing.push('年齡');
-  if (blank(r.systolic) || !Number.isFinite(systolic)) missing.push('收縮壓');
-  if (blank(r.totalCholesterol) || !Number.isFinite(total)) missing.push('總膽固醇');
-  if (blank(r.hdl) || !Number.isFinite(hdl)) missing.push('高密度膽固醇（HDL）');
-  if (missing.length) return { error: `缺少：${missing.join('、')}。` };
-  if (r.bpMedicationProvided === false) return { error: '缺少：高血壓用藥（請填寫有或無）。' };
-  if (age < 30 || age > 74) return { error: 'Framingham 心血管風險模型適用年齡為 30～74 歲。' };
-  if (total <= 0 || hdl <= 0 || systolic <= 0) return { error: '總膽固醇、HDL 與收縮壓必須是大於 0 的數值。' };
-  const c = NTUH_FRAMINGHAM[r.sex];
-  const components = { age: Math.log(age) * c.age, totalCholesterol: Math.log(total) * c.totalCholesterol, hdl: Math.log(hdl) * c.hdl, systolic: Math.log(systolic) * (r.bpMedication ? c.systolicTreated : c.systolicUntreated), smoking: r.smoking ? c.smoking : 0, diabetes: r.diabetes ? c.diabetes : 0 };
-  const linearPredictor = Object.values(components).reduce((sum, value) => sum + value, 0);
-  const percent = (1 - Math.pow(c.survival, Math.exp(linearPredictor - c.mean))) * 100;
-  return { percent, risk: `${percent.toFixed(1)}%`, category: riskCategory(percent, r.diabetes), components, model: 'NTUH-Framingham-log-coefficient' };
-}
-
 function flagValue(value) { return /^(y|yes|1|有|是|true|陽性|使用)$/i.test(String(value ?? '').trim()); }
 function firstValue(row, keys) { const key = keys.find((name) => row[name] !== undefined && String(row[name]).trim() !== ''); return key ? row[key] : ''; }
 function calculateImportedRisk(row, personIndex) {
@@ -432,12 +403,6 @@ function renderResultsPanel() {
   return `<section class="panel results-panel" id="results"><div class="section-heading"><div><div class="section-kicker">STEP 03 / RESULTS</div><p>顯示每位受檢者的序號、分級最大值、未提供數值與腦心血管風險；匯出檔會依分級結果範本排列。</p>${currentFile}</div><button class="btn btn-primary" id="exportExcel" ${state.sourceRows.length || state.results.length ? '' : 'disabled'}>${icon.download} 匯出 Excel</button></div><div class="result-table-wrap"><table class="result-table result-summary-table"><thead><tr><th>序號</th><th>分級最大值</th><th>未提供數值</th><th>腦心血管風險</th></tr></thead><tbody>${resultRows}</tbody></table></div></section>`;
 }
 
-function normalizeHeader(header) { return String(header || '').replace(/\s/g, '').toLowerCase(); }
-function headersMatch(left, right) {
-  const a = normalizeHeader(left); const b = normalizeHeader(right);
-  if (!a || !b) return false;
-  return a === b || a.startsWith(b) || (a.length >= 3 && b.startsWith(a));
-}
 function findColumn(headers, names) { return headers.find((header) => names.some((name) => normalizeHeader(header).includes(normalizeHeader(name)))); }
 
 function parseRows(rows, headerRow = []) {
@@ -477,36 +442,10 @@ function parseRows(rows, headerRow = []) {
   return { records, sourceRows: normalizedRows, sourceHeaders: nonEmptyHeaders, mode: 'wide' };
 }
 
-function parseNumber(value) { const match = String(value).replace(/,/g, '').replace(/[．。]/g, '.').match(/-?\d+(?:\.\d+)?/); return match ? Number(match[0]) : null; }
-function parseRange(condition) {
-  const clean = String(condition).replace(/[＊*]/g, '').replace(/[．。]/g, '.').trim();
-  const match = clean.match(/^(-?\d+(?:\.\d+)?)\s*[~～\-至]\s*(-?\d+(?:\.\d+)?)$/);
-  if (match) return { min: Number(match[1]), max: Number(match[2]), minInclusive: true, maxInclusive: true };
-  const single = clean.match(/^(<=|>=|<|>)\s*(-?\d+(?:\.\d+)?)$/);
-  if (!single) return null;
-  const value = Number(single[2]);
-  if (single[1] === '<' || single[1] === '<=') return { min: -Infinity, max: value, minInclusive: true, maxInclusive: single[1] === '<=' };
-  return { min: value, max: Infinity, minInclusive: single[1] === '>=', maxInclusive: true };
-}
-
-function rangesOverlap(left, right) {
-  const lower = Math.max(left.min, right.min); const upper = Math.min(left.max, right.max);
-  if (lower < upper) return true;
-  if (lower > upper) return false;
-  const leftIncludes = (lower !== left.min || left.minInclusive) && (lower !== left.max || left.maxInclusive);
-  const rightIncludes = (lower !== right.min || right.minInclusive) && (lower !== right.max || right.maxInclusive);
-  return leftIncludes && rightIncludes;
-}
-
-function validNumericCondition(condition) {
-  const range = parseRange(condition);
-  return Boolean(range && range.min < range.max);
-}
-
 function ruleMatches(rule, record) {
   if (rule.name.trim() !== record.name.trim()) return false;
   if (!ruleSexMatches(rule, record)) return false;
-  if (ruleType(rule) === 'number') { const range = parseRange(rule.condition); const parsed = parseNumber(record.value); const value = parsed === null ? null : Math.round((parsed + Number.EPSILON) * 10) / 10; return Boolean(range && value !== null && (range.minInclusive ? value >= range.min : value > range.min) && (range.maxInclusive ? value <= range.max : value < range.max)); }
+  if (ruleType(rule) === 'number') { const range = parseRange(rule.condition); const parsed = parseNumber(record.value); const value = parsed === null ? null : roundOneDecimal(parsed); return Boolean(range && value !== null && (range.minInclusive ? value >= range.min : value > range.min) && (range.maxInclusive ? value <= range.max : value < range.max)); }
   const keyword = String(rule.condition).replace(/[＊*]/g, '').trim().toLowerCase();
   return Boolean(keyword && record.value.toLowerCase().includes(keyword));
 }
