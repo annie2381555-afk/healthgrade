@@ -1,11 +1,12 @@
 import * as XLSX from 'xlsx-js-style';
+import ExcelJS from 'exceljs';
 import initialRules from './rules.json';
 import { headersMatch, normalizeHeader, parseNumber, parseRange, rangesOverlap, roundOneDecimal, serialKey, uniqueSerialCount, validNumericCondition, calculateFramingham, riskCategory } from './healthgrade-core.js';
 import './styles.css';
 
 const app = document.querySelector('#root');
-const APP_VERSION = '0.3.2';
-const LAST_UPDATED = '2026 年 11 月 13 日';
+const APP_VERSION = '0.3.9';
+const LAST_UPDATED = '2026 年 11 月 16 日';
 const levelLabels = { 1: '低', 2: '中', 3: '高', 4: '嚴重' };
 const REFERENCE_BASE_COLUMNS = ['序號', '性別', '年齡', '糖尿病', '吸菸', '檳榔', '身高', '體重', 'BMI', '腰圍', '收縮壓', '舒張壓', '矯正右', '矯正左', '辨色力', '白血球', '血紅素', 'SGPT', '肌酸酐', '總膽固醇', '三酸甘油脂', '高密度膽固醇', '低密度膽固醇', '飯前血糖', '糖化血色素', '尿酸', '尿蛋白', '尿潛血', '胸部X光', '640切心臟'];
 const REFERENCE_GRADE_COLUMNS = ['既往病史', '家族史', ...REFERENCE_BASE_COLUMNS.slice(8)];
@@ -24,6 +25,9 @@ const RULES_DEFAULT_VERSION = '2026-11-03-user-backup-v1';
 const DEFAULT_RULE_ALIASES = {"身體質量指數": ["BMI", "body mass index"], "腰圍": ["waist circumference", "waist"], "收縮壓": ["SBP", "systolic blood pressure"], "舒張壓": ["DBP", "diastolic blood pressure"], "矯正(右眼)": ["矯正右", "視力(右)", "視力(右眼)", "corrected right vision"], "矯正(左眼)": ["矯正左", "視力(左)", "視力(左眼)", "corrected left vision"], "辨色力": ["色覺", "color vision", "color blindness"], "白血球": ["WBC", "white blood cell"], "血紅素": ["Hb", "hemoglobin", "血色素"], "丙胺酸轉胺酶": ["SGPT", "ALT", "GPT", "alanine aminotransferase", "肝功能"], "肌酸酐": ["Cr", "creatinine"], "總膽固醇": ["TC", "total cholesterol"], "三酸甘油脂": ["TG", "triglyceride", "三酸甘油酯"], "高密度脂蛋白": ["HDL", "high-density lipoprotein", "高密度膽固醇"], "低密度脂蛋白": ["LDL", "low-density lipoprotein", "低密度膽固醇"], "空腹血糖": ["FBS", "fasting blood sugar", "飯前血糖"], "糖化血色素": ["HbA1c", "A1C", "glycated hemoglobin"], "尿蛋白": ["pro", "Urine protein", "U/pro", "Protein"], "尿潛血": ["U/OB", "Occult blood", "OB"], "胸部X光": ["X-ray", "Xray", "X光"], "尿酸": ["UA", "uric acid"], "既往病史": ["過去疾病", "過去病史", "過往疾病", "既(過)往病史"], "促甲狀腺素": ["TSH", "TSH甲狀腺", "甲狀腺TSH", "甲狀腺"], "家族史": ["家庭病史", "家族病史"], "主訴": ["主要訴求"]};
 const HIDDEN_RULES_COPY = { guidance: '每個項目名稱集中管理分級條件與可替代欄名；點選「分級規則」即可直接修改並儲存。主清單可刪除整個項目。文字條件不可完全相同，但「結節」、「大結節」、「小結節」等不同字詞可以並存。', source: '還原依據：職健導航_分級規則備份.xlsx', format: '數字：數值~數值；文字：完全相同不可重複' };
 const BRAND_LOGO_URL = '/zhijian-logo.png';
+const ADSENSE_CLIENT = 'ca-pub-6849162283352272';
+const ADSENSE_SLOT = '1858738422';
+const ADSENSE_SCRIPT_ID = 'healthgrade-adsense-script';
 const state = {
   consentAccepted: false,
   view: 'overview',
@@ -153,28 +157,37 @@ function statusClass(status) { return `nav-state-${status}`; }
 function currentViewLabel() { return ({ overview: '總表', import: '匯入健檢資料', results: '分級結果', rules: '分級規則' })[state.view] || '總表'; }
 function currentDateLabel() { return new Intl.DateTimeFormat('zh-TW', { year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'short' }).format(new Date()); }
 function currentClock() { return new Intl.DateTimeFormat('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date()); }
+function renderLandingPurpose() {
+  return `<section class="landing-purpose" aria-labelledby="landingPurposeTitle"><div class="landing-purpose-copy"><span class="purpose-tag">職護工作場景</span><div class="section-kicker">WHY IT MATTERS / CASE MANAGEMENT</div><h2 id="landingPurposeTitle">把健檢數據，轉成下一步的個案行動</h2><p>職護每天面對的不只是數字，而是需要被看見、被排序、被追蹤的個案。透過一致的分級規則，先整理異常程度，再把有限的照護時間用在最需要關注的地方。</p><div class="landing-purpose-points"><span><b>01</b><strong>看見</strong> 快速整理異常訊號</span><span><b>02</b><strong>排序</strong> 依程度安排追蹤優先順序</span><span><b>03</b><strong>追蹤</strong> 保留可回溯的工作依據</span></div></div><div class="landing-purpose-visual" aria-label="醫護人員使用職健導航進行個案管理"><svg class="tech-factory-pattern" viewBox="0 0 640 360" aria-hidden="true"><g class="factory-lines"><path d="M18 286h604M42 286V222h74v64m0-64 32-24 32 24v64m0 0v-91h96v91m-96-62h96m-82-29v-32h28v32m34 0v-32h28v32m116 91V185h92v101m-92-68h92m-72-33v-38h25v38m20 0v-38h25v38"/><path d="M80 222v-42h22v42m154 0v-48h22v48m151 11h62m-31-31v62"/><path d="M76 141h55l28-28h88l32 31h76l24-24h90"/><path d="M132 141v-34h18m68 37v-28h24m114 28v-34h20m83 30v-24h20"/></g><g class="factory-nodes"><circle cx="76" cy="141" r="5"/><circle cx="159" cy="113" r="5"/><circle cx="279" cy="144" r="5"/><circle cx="379" cy="120" r="5"/><circle cx="493" cy="120" r="5"/><circle cx="116" cy="222" r="4"/><circle cx="228" cy="190" r="4"/><circle cx="454" cy="185" r="4"/></g><g class="factory-windows"><path d="M60 246h13m17 0h13m-30 20h13m17 0h13m106-42h14m17 0h14m-31 21h14m17 0h14m135-5h14m17 0h14m-31 21h14m17 0h14"/></g></svg><img class="purpose-illustration" src="/manus-storage/async-images/WCtdIwmHNC71LgbHl8XpHY/image-1.webp" alt="醫護人員共同查看職健導航健康分級儀表板的原創插圖" /><div class="purpose-art-badge"><span>${icon.shield}</span><strong>職健導航</strong><small>讓臨場照護更有方向</small></div></div></section>`;
+}
+function renderLandingWorkflow() {
+  return `<section class="landing-workflow" aria-labelledby="landingWorkflowTitle"><div class="landing-workflow-heading"><div><div class="section-kicker">START HERE / WORKFLOW</div><h2 id="landingWorkflowTitle">使用流程</h2></div><p>三個步驟，把健檢報告整理成可追蹤的工作結果。</p></div><div class="landing-flow"><article class="landing-flow-step"><div class="flow-step-top"><span class="flow-step-no">STEP 1.</span><span class="flow-icon">${icon.sliders}</span></div><h3>分級規則</h3><p>先確認項目名稱、數值條件、文字條件與分級程度。</p></article><article class="landing-flow-step"><div class="flow-step-top"><span class="flow-step-no">STEP 2.</span><span class="flow-icon">${icon.upload}</span></div><h3>匯入健檢報告</h3><p>上傳已完成<strong class="deidentification-highlight">去識別化</strong>的 Excel，資料在瀏覽器本機讀取。</p></article><article class="landing-flow-step"><div class="flow-step-top"><span class="flow-step-no">STEP 3.</span><span class="flow-icon">${icon.chart}</span></div><h3>查看分級結果</h3><p>檢視分級最大值、未提供數值與風險提示，再由專業人員覆核。</p></article></div></section>`;
+}
+function renderLandingDashboardHighlight() {
+  return `<section class="landing-dashboard-highlight" aria-labelledby="landingDashboardTitle"><div class="landing-dashboard-copy"><div class="section-kicker">THE HIGHLIGHT / DASHBOARD</div><h2 id="landingDashboardTitle">總表，讓異常趨勢一眼就看見</h2><p>匯入健檢報告後，總表會依不重複序號統計主要異常人數，將血壓、血糖、BMI、血脂與代謝症候群等資訊整理成清楚的視覺化摘要。</p><div class="landing-dashboard-benefits"><div><span class="benefit-icon">${icon.chart}</span><span><strong>快速掌握族群狀況</strong><small>不用逐筆翻找，先看整體分布</small></span></div><div><span class="benefit-icon">${icon.shield}</span><span><strong>協助個案優先排序</strong><small>把時間留給需要追蹤的人</small></span></div></div><span class="landing-dashboard-note">示意畫面｜實際數據依您匯入的報告計算</span></div><div class="landing-dashboard-preview"><div class="preview-window-bar"><span><i></i><i></i><i></i></span><strong>總表　／　主要異常項目</strong><small>SUMMARY</small></div><div class="preview-stat-row"><div><small>目前匯入</small><strong>128</strong><span>筆檢查資料</span></div><div><small>異常項目</small><strong>06</strong><span>類別摘要</span></div></div><div class="preview-chart-title"><strong>主要異常項目</strong><span>異常人數</span></div><div class="preview-bars"><div><span>血壓異常</span><i><b style="width:82%"></b></i><em>42</em></div><div><span>血脂異常</span><i><b style="width:66%"></b></i><em>34</em></div><div><span>BMI 異常</span><i><b style="width:51%"></b></i><em>26</em></div><div><span>血糖異常</span><i><b style="width:39%"></b></i><em>20</em></div></div><div class="preview-footer"><span>依不重複序號統計</span><span>長條圖摘要</span></div></div></section>`;
+}
 function renderLandingPage() {
-  return `<main class="landing-page"><section class="landing-card"><div class="landing-brand"><div class="landing-logo"><img src="${BRAND_LOGO_URL}" alt="職健導航 Logo" /></div><div><div class="landing-kicker">OCCUPATIONAL HEALTH NAVIGATION TOOL</div><h1>職健導航</h1><p>本機健檢分級工具</p></div></div><div class="landing-hero"><h2>開始前，請先閱讀使用聲明</h2><p>本工具協助職護人員在本機完成健檢資料分級、統計與結果匯出。</p></div><div class="landing-sections"><article><h3>個資與資料處理聲明</h3><ul><li>您匯入的健檢 Excel 僅在目前瀏覽器記憶體中讀取、分析與匯出。</li><li>本工具不主動上傳健檢資料、不建立健檢資料庫，也不要求姓名、身分證字號或工號等直接識別資訊。</li><li>請先完成個資去識別化，再上傳檔案至平台進行分級。</li><li>重新整理或關閉頁面後，本次健檢資料不會由本工具永久保存；自訂規則請另行下載 Excel 備份。</li></ul></article><article><h3>使用規則與重要提醒</h3><ul><li>匯入資料前請確認您已取得組織授權，並遵守個人資料保護及相關醫療、職業安全衛生規範。</li><li>分級規則與腦心血管風險結果僅供篩檢與工作輔助，不能取代醫師診斷、正式病歷或醫療建議。</li><li>所有分級、風險模型與匯出結果，均須由合格職護／職醫人工覆核。</li><li>使用者須自行確認資料正確性、規則適用性與匯入內容是否符合工作需求。</li></ul></article></div><div class="landing-consent"><label><input type="checkbox" id="landingConsent" /><span>我已閱讀並同意上述個資處理聲明與使用規則</span></label><button class="btn btn-primary" id="enterTool" disabled>同意並進入職健導航</button></div>${renderAdSlot('landing')}<p class="landing-footnote">本工具不提供醫療診斷；使用前請確認已完成必要的個資告知與組織授權。</p></section></main>`;
+  return `<main class="landing-page"><section class="landing-card"><div class="landing-brand"><div class="landing-logo"><img src="${BRAND_LOGO_URL}" alt="職健導航 Logo" /></div><div><div class="landing-kicker">OCCUPATIONAL HEALTH NAVIGATION TOOL</div><div class="landing-title-row"><h1>職健導航</h1><span class="landing-slogan">讓臨場照護更有方向</span></div><p>本機健檢分級工具</p></div></div>${renderLandingPurpose()}${renderLandingWorkflow()}${renderLandingDashboardHighlight()}<div class="landing-hero"><h2>開始前，請先閱讀使用聲明</h2><p>本工具協助職護人員在本機完成健檢資料分級、統計與結果匯出。</p></div><div class="landing-sections"><article><h3>個資與資料處理聲明</h3><ul><li>您匯入的健檢 Excel 僅在目前瀏覽器記憶體中讀取、分析與匯出。</li><li>本工具不主動上傳健檢資料、不建立健檢資料庫，也不要求姓名、身分證字號或工號等直接識別資訊。</li><li>請先完成個資去識別化，再上傳檔案至平台進行分級。</li><li>重新整理或關閉頁面後，本次健檢資料不會由本工具永久保存；自訂規則請另行下載 Excel 備份。</li></ul></article><article><h3>使用規則與重要提醒</h3><ul><li>匯入資料前請確認您已取得組織授權，並遵守個人資料保護及相關醫療、職業安全衛生規範。</li><li>分級規則與腦心血管風險結果僅供篩檢與工作輔助，不能取代醫師診斷、正式病歷或醫療建議。</li><li>所有分級、風險模型與匯出結果，均須由合格職護／職醫人工覆核。</li><li>使用者須自行確認資料正確性、規則適用性與匯入內容是否符合工作需求。</li></ul></article></div><div class="landing-consent"><label><input type="checkbox" id="landingConsent" /><span>我已閱讀並同意上述個資處理聲明與使用規則</span></label><button class="btn btn-primary" id="enterTool" disabled>同意並進入職健導航</button></div>${renderAdSlot('landing')}<p class="landing-footnote">本工具不提供醫療診斷；使用前請確認已完成必要的個資告知與組織授權。</p></section></main>`;
 }
 function render() {
   if (!state.consentAccepted) {
     app.innerHTML = renderLandingPage();
+    mountLandingAd();
     const consent = document.querySelector('#landingConsent');
     const enter = document.querySelector('#enterTool');
     consent?.addEventListener('change', () => { enter.disabled = !consent.checked; });
     enter?.addEventListener('click', () => { if (!consent.checked) return; state.consentAccepted = true; render(); });
     return;
   }
+  removeLandingAd();
   const conflictCount = detectConflicts(state.rules).length;
   const levelCount = [1, 2, 3, 4].map((level) => state.results.filter((item) => item.level === level).length);
   app.innerHTML = `
     <div class="shell">
       <aside class="sidebar">
         <div class="brand"><div class="brand-mark"><img src="${BRAND_LOGO_URL}" alt="職健導航 Logo" /></div><div><div class="brand-name">職健導航</div><div class="brand-caption">本機健檢分級工具</div></div></div>
-        <div class="privacy-chip"><span class="status-dot"></span><span>本機模式已啟用</span></div>
         <nav class="nav"><a class="nav-item nav-overview ${state.view === 'overview' ? 'active' : ''}" data-view="overview" href="#overview">${icon.chart}<span class="nav-label">總表</span></a><div class="nav-divider"><span>工作流程</span></div><a class="nav-item nav-step-item ${state.view === 'rules' ? 'active' : ''}" data-view="rules" href="#rules">${icon.sliders}<span class="nav-step-no">Step 1.</span><span class="nav-label">分級規則</span></a><a class="nav-item nav-step-item ${state.view === 'import' ? 'active' : ''}" data-view="import" href="#import">${icon.upload}<span class="nav-step-no">Step 2.</span><span class="nav-copy"><span class="nav-label">匯入健檢報告</span><span class="nav-state ${statusClass(state.uploadStatus)}">${uploadStatusText()}</span></span></a><a class="nav-item nav-step-item ${state.view === 'results' ? 'active' : ''}" data-view="results" href="#results">${icon.chart}<span class="nav-step-no">Step 3.</span><span class="nav-copy"><span class="nav-label">分級結果</span><span class="nav-state ${statusClass(state.uploadStatus === 'uploading' ? 'uploading' : (state.uploadStatus === 'success' ? 'success' : 'empty'))}">${resultStatusText()}</span></span></a></nav>
         <div class="sidebar-note"><div class="note-icon">${icon.shield}</div><strong>資料不離開您的裝置</strong><p>報告只在瀏覽器記憶體中處理，不上傳、不建檔。</p></div>
-        ${renderAdSlot('sidebar')}
         <div class="sidebar-footer">${APP_VERSION} 本機原型<br /><span>最後更新：${LAST_UPDATED}　規則由使用者自行確認</span><button class="privacy-link" id="privacyPolicy">隱私權與使用說明</button></div>
       </aside>
       <main class="main">
@@ -199,11 +212,11 @@ function importedSerialCount() { return uniqueSerialCount(state.sourceRows); }
 
 function renderDashboard(levelCount) {
   const importedCount = importedSerialCount();
-  return `<section class="dashboard-section" id="overview"><div class="dashboard-heading"><div><div class="section-kicker">SUMMARY / DASHBOARD</div><p>快速掌握本次匯入資料的主要異常項目。</p></div><div class="dashboard-file">${state.fileName ? `${icon.file} ${esc(state.fileName)}` : '尚未匯入報告'}</div></div><div class="hero-stats"><div class="stat-card accent"><div class="stat-label">目前匯入</div><div class="stat-value">${importedCount || '—'}</div><div class="stat-foot">${importedCount ? '筆檢查資料（依序號統計）' : '尚未匯入 Excel'}</div></div></div>${renderAnomalyChart(levelCount)}${renderAdSlot('dashboard')}</section>`;
+  return `<section class="dashboard-section" id="overview"><div class="dashboard-heading"><div><div class="section-kicker">SUMMARY / DASHBOARD</div><p>快速掌握本次匯入資料的主要異常項目。</p></div><div class="dashboard-heading-actions"><div class="dashboard-file">${state.fileName ? `${icon.file} ${esc(state.fileName)}` : '尚未匯入報告'}</div><button class="btn btn-secondary" id="exportDashboard" ${importedCount ? '' : 'disabled'}>${icon.download} 匯出總表報告</button></div></div><div class="hero-stats"><div class="stat-card accent"><div class="stat-label">目前匯入</div><div class="stat-value">${importedCount || '—'}</div><div class="stat-foot">${importedCount ? '筆檢查資料（依序號統計）' : '尚未匯入 Excel'}</div></div></div>${renderAnomalyChart(levelCount)}</section>`;
 }
 
 function renderPrivacyModal() {
-  return `<div class="privacy-modal" id="privacyModal" hidden><div class="privacy-backdrop" data-close-privacy></div><section class="privacy-dialog" role="dialog" aria-modal="true" aria-labelledby="privacyTitle"><button class="privacy-close" data-close-privacy aria-label="關閉隱私權說明">×</button><div class="section-kicker">PRIVACY & USE</div><h2 id="privacyTitle">隱私權與使用說明</h2><p class="privacy-updated">最後更新：${LAST_UPDATED}</p><div class="privacy-content"><h3>一、適用範圍與服務定位</h3><p>「職健導航」是提供職護人員使用的純前端健檢資料分級、統計與 Excel 匯出輔助工具。本工具不是醫療機構、電子病歷系統、正式健檢資料庫或醫療診斷服務。使用本工具即表示您已閱讀本說明，並同意依組織規範與適用法令使用。</p><h3>二、健檢資料如何處理</h3><p>您選取的 Excel 會由目前瀏覽器在本機記憶體中讀取、分析、分級與匯出。本工具不主動將 Excel 內容、姓名、身分證字號、工號、健檢數值或分級結果上傳至本工具的應用程式伺服器，也不建立健檢資料庫。請先完成個資去識別化，再上傳檔案至平台進行分級。</p><h3>三、資料保存與刪除</h3><p>本次健檢資料只在目前瀏覽器工作階段中使用；重新上傳檔案會取代目前分析結果，關閉或重新整理頁面後，本工具不提供本次資料的永久保存或復原功能。請使用者自行管理下載到電腦的 Excel 檔案、瀏覽器下載紀錄、暫存檔、備份檔與螢幕截圖。分級規則修改、新增或刪除後不會自動保存；需要保留時，請自行下載 Excel 備份。</p><h3>四、網站託管與技術性紀錄</h3><p>本網站可能啟用 Cloudflare Web Analytics，以了解網站訪問量、頁面瀏覽與頁面效能。該分析服務與健檢資料處理流程分離；本工具不會將使用者匯入的 Excel、健檢數值、分級結果或規則內容提供給分析服務。Cloudflare Web Analytics 的實際技術處理、保存期間與隱私作法，仍以 Cloudflare 最新公開政策與設定為準。<br />雖然健檢 Excel 由瀏覽器本機處理，公開網站的託管、CDN、DNS、安全防護或錯誤監控服務仍可能依其政策產生一般技術性紀錄，例如 IP 位址、連線時間、瀏覽器類型、裝置資訊、請求網址與安全事件紀錄。這些網站連線紀錄不等同於本工具主動收集健檢內容；實際保存期間與處理方式仍以相關託管服務商政策為準。</p><h3>五、Cookie、廣告與第三方服務</h3><p>Cloudflare Web Analytics 可能透過頁面分析程式收集網站瀏覽與效能指標；若您不希望使用此類分析，請依網站或瀏覽器提供的設定與告知選項處理。<br />目前頁面僅保留非干擾性廣告版位，未在本工具程式中放入健檢資料追蹤機制。若日後啟用 Google AdSense、分析工具、Cookie 或其他第三方服務，該服務可能依其自身政策處理 IP、Cookie、裝置、瀏覽與廣告成效資料；啟用前應更新本說明、提供必要的告知與選擇機制，並依服務地區要求完成設定。第三方服務不應取得使用者匯入的 Excel 內容。</p><h3>六、使用者義務與誤傳個資</h3><p>使用者應在匯入前完成去識別化、確認已取得組織授權，並確認檔案不含不必要的姓名、身分證字號、工號、電話、地址、病歷號或其他可直接識別個人的資訊。若使用者自行匯入、下載、保存、分享或公開含有真實個資的檔案，使用者仍須依其身分、組織政策及適用法令負責處理；首頁告知並不等於對使用者違法或不當處理個資的豁免。若發生誤傳，請立即停止分享、刪除相關檔案與下載副本，並依所屬組織的個資事件通報流程處理。</p><h3>七、分級與醫療責任限制</h3><p>分級規則、公開門檻、腦心血管風險模型與統計結果可能因資料品質、欄位名稱、規則設定、版本或模型限制而產生差異。本工具僅供篩檢與工作流程輔助，不提供疾病診斷、治療建議或正式醫療判定；所有結果均須由合格職護、職醫或相關專業人員查核，不得直接作為醫療決策、雇用決策或其他重大人身決策的唯一依據。</p><h3>八、資訊安全與使用限制</h3><p>本工具採瀏覽器本機處理，但使用者仍須自行維護裝置、瀏覽器、下載資料夾、備份檔與帳號環境的安全。請勿在共用電腦留下未加密的健檢檔案，也請勿將去識別化不足的檔案寄送或分享給未授權人員。網站提供者不保證所有瀏覽器、檔案格式、網路環境或第三方託管服務永遠不中斷或完全無錯誤。</p><h3>九、規則與說明更新</h3><p>網站可能因功能、分級規則、公開健康門檻、風險模型、託管服務或法規需求而更新。更新後會調整版本內容與本頁最後更新日期；使用者在正式工作流程中採用結果前，應確認目前版本是否經組織核准與專業覆核。</p><h3>十、聯絡與法律檢視</h3><p>若您代表公司、醫療院所或健檢機構使用，請由組織指定窗口處理個資、資安與醫療責任問題。本頁是網站公開使用說明，不構成法律意見，也不取代個資盤點、委外契約、資安評估、事件通報計畫或正式隱私權政策；正式對外營運前，建議依服務地區、託管商、廣告設定與實際營運主體，請個資或法律專業人士檢視。</p><h3>十一、免費服務與使用條款</h3><p>本工具目前提供免費使用，網站可能透過廣告版位維持營運；免費使用不代表網站提供任何醫療保證、資料保存、特定可用性或不間斷服務承諾。使用者不得以本工具取代專業判斷，不得故意上傳、公開、分享未完成去識別化的資料，不得以干擾網站、繞過安全機制、濫用自動化請求或其他違法方式使用本服務。網站提供者得因維護、資安、法規、第三方服務或功能更新而暫停、調整或停止部分功能。使用者應自行確認匯入資料、規則設定、結果解讀與下載檔案的正確性，並承擔其組織授權、資料管理及工作決策責任。</p><p class="privacy-disclaimer">使用前請確認：已完成個資去識別化、具備必要授權、理解本工具僅供工作輔助，並會由合格職護／職醫人工覆核結果。</p></div></section></div>`;
+  return `<div class="privacy-modal" id="privacyModal" hidden><div class="privacy-backdrop" data-close-privacy></div><section class="privacy-dialog" role="dialog" aria-modal="true" aria-labelledby="privacyTitle"><button class="privacy-close" data-close-privacy aria-label="關閉隱私權說明">×</button><div class="section-kicker">PRIVACY & USE</div><h2 id="privacyTitle">隱私權與使用說明</h2><p class="privacy-updated">最後更新：${LAST_UPDATED}</p><div class="privacy-content"><h3>一、適用範圍與服務定位</h3><p>「職健導航」是提供職護人員使用的純前端健檢資料分級、統計與 Excel 匯出輔助工具。本工具不是醫療機構、電子病歷系統、正式健檢資料庫或醫療診斷服務。使用本工具即表示您已閱讀本說明，並同意依組織規範與適用法令使用。</p><h3>二、健檢資料如何處理</h3><p>您選取的 Excel 會由目前瀏覽器在本機記憶體中讀取、分析、分級與匯出。本工具不主動將 Excel 內容、姓名、身分證字號、工號、健檢數值或分級結果上傳至本工具的應用程式伺服器，也不建立健檢資料庫。請先完成個資去識別化，再上傳檔案至平台進行分級。</p><h3>三、資料保存與刪除</h3><p>本次健檢資料只在目前瀏覽器工作階段中使用；重新上傳檔案會取代目前分析結果，關閉或重新整理頁面後，本工具不提供本次資料的永久保存或復原功能。請使用者自行管理下載到電腦的 Excel 檔案、瀏覽器下載紀錄、暫存檔、備份檔與螢幕截圖。分級規則修改、新增或刪除後不會自動保存；需要保留時，請自行下載 Excel 備份。</p><h3>四、網站託管與技術性紀錄</h3><p>本網站可能啟用 Cloudflare Web Analytics，以了解網站訪問量、頁面瀏覽與頁面效能。該分析服務與健檢資料處理流程分離；本工具不會將使用者匯入的 Excel、健檢數值、分級結果或規則內容提供給分析服務。Cloudflare Web Analytics 的實際技術處理、保存期間與隱私作法，仍以 Cloudflare 最新公開政策與設定為準。<br />雖然健檢 Excel 由瀏覽器本機處理，公開網站的託管、CDN、DNS、安全防護或錯誤監控服務仍可能依其政策產生一般技術性紀錄，例如 IP 位址、連線時間、瀏覽器類型、裝置資訊、請求網址與安全事件紀錄。這些網站連線紀錄不等同於本工具主動收集健檢內容；實際保存期間與處理方式仍以相關託管服務商政策為準。</p><h3>五、Cookie、廣告與第三方服務</h3><p>Cloudflare Web Analytics 可能透過頁面分析程式收集網站瀏覽與效能指標；若您不希望使用此類分析，請依網站或瀏覽器提供的設定與告知選項處理。<br />目前僅在首頁個資與使用聲明頁載入 1 個 Google AdSense 多媒體廣告；使用者按下「同意並進入職健導航」後，首頁廣告元素與廣告程式標籤會移除，總表、分級規則、匯入健檢報告與分級結果頁不載入 AdSense 程式。Google AdSense 可能依其自身政策處理 IP、Cookie、裝置、瀏覽與廣告成效資料；網站會依適用地區提供必要的告知與同意機制。第三方廣告服務不應取得使用者匯入的 Excel 內容。</p><h3>六、使用者義務與誤傳個資</h3><p>使用者應在匯入前完成去識別化、確認已取得組織授權，並確認檔案不含不必要的姓名、身分證字號、工號、電話、地址、病歷號或其他可直接識別個人的資訊。若使用者自行匯入、下載、保存、分享或公開含有真實個資的檔案，使用者仍須依其身分、組織政策及適用法令負責處理；首頁告知並不等於對使用者違法或不當處理個資的豁免。若發生誤傳，請立即停止分享、刪除相關檔案與下載副本，並依所屬組織的個資事件通報流程處理。</p><h3>七、分級與醫療責任限制</h3><p>分級規則、公開門檻、腦心血管風險模型與統計結果可能因資料品質、欄位名稱、規則設定、版本或模型限制而產生差異。本工具僅供篩檢與工作流程輔助，不提供疾病診斷、治療建議或正式醫療判定；所有結果均須由合格職護、職醫或相關專業人員查核，不得直接作為醫療決策、雇用決策或其他重大人身決策的唯一依據。</p><h3>八、資訊安全與使用限制</h3><p>本工具採瀏覽器本機處理，但使用者仍須自行維護裝置、瀏覽器、下載資料夾、備份檔與帳號環境的安全。請勿在共用電腦留下未加密的健檢檔案，也請勿將去識別化不足的檔案寄送或分享給未授權人員。網站提供者不保證所有瀏覽器、檔案格式、網路環境或第三方託管服務永遠不中斷或完全無錯誤。</p><h3>九、規則與說明更新</h3><p>網站可能因功能、分級規則、公開健康門檻、風險模型、託管服務或法規需求而更新。更新後會調整版本內容與本頁最後更新日期；使用者在正式工作流程中採用結果前，應確認目前版本是否經組織核准與專業覆核。</p><h3>十、聯絡與法律檢視</h3><p>若您代表公司、醫療院所或健檢機構使用，請由組織指定窗口處理個資、資安與醫療責任問題。本頁是網站公開使用說明，不構成法律意見，也不取代個資盤點、委外契約、資安評估、事件通報計畫或正式隱私權政策；正式對外營運前，建議依服務地區、託管商、廣告設定與實際營運主體，請個資或法律專業人士檢視。</p><h3>十一、免費服務與使用條款</h3><p>本工具目前提供免費使用，網站可能透過廣告版位維持營運；免費使用不代表網站提供任何醫療保證、資料保存、特定可用性或不間斷服務承諾。使用者不得以本工具取代專業判斷，不得故意上傳、公開、分享未完成去識別化的資料，不得以干擾網站、繞過安全機制、濫用自動化請求或其他違法方式使用本服務。網站提供者得因維護、資安、法規、第三方服務或功能更新而暫停、調整或停止部分功能。使用者應自行確認匯入資料、規則設定、結果解讀與下載檔案的正確性，並承擔其組織授權、資料管理及工作決策責任。</p><p class="privacy-disclaimer">使用前請確認：已完成個資去識別化、具備必要授權、理解本工具僅供工作輔助，並會由合格職護／職醫人工覆核結果。</p></div></section></div>`;
 }
 function renderNoticeModal() {
   if (!state.notice) return '';
@@ -211,7 +224,32 @@ function renderNoticeModal() {
 }
 
 function renderAdSlot(place) {
-  return `<div class="ad-slot ad-slot-${place}" data-ad-placement="${place}" aria-label="廣告"><span class="ad-label">廣告</span><span class="ad-placeholder">保留清爽版位，不干擾健檢資料操作</span></div>`;
+  if (place !== 'landing') return '';
+  return `<div class="ad-slot ad-slot-${place}" data-ad-placement="${place}" aria-label="廣告"><span class="ad-label">廣告</span><ins class="adsbygoogle" style="display:block" data-ad-client="${ADSENSE_CLIENT}" data-ad-slot="${ADSENSE_SLOT}" data-ad-format="auto" data-full-width-responsive="true"></ins></div>`;
+}
+
+function mountLandingAd() {
+  const slot = document.querySelector('[data-ad-placement="landing"]');
+  if (!slot || document.getElementById(ADSENSE_SCRIPT_ID)) return;
+  const script = document.createElement('script');
+  script.id = ADSENSE_SCRIPT_ID;
+  script.async = true;
+  script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`;
+  script.crossOrigin = 'anonymous';
+  script.addEventListener('load', () => {
+    try {
+      window.adsbygoogle = window.adsbygoogle || [];
+      window.adsbygoogle.push({});
+    } catch (error) {
+      slot.dataset.adStatus = 'unavailable';
+    }
+  }, { once: true });
+  document.head.appendChild(script);
+}
+
+function removeLandingAd() {
+  document.querySelectorAll('[data-ad-placement="landing"] ins.adsbygoogle').forEach((element) => element.remove());
+  document.getElementById(ADSENSE_SCRIPT_ID)?.remove();
 }
 
 function metricValue(row, keys) { const raw = keys.find((key) => row[key] !== undefined && String(row[key]).trim() !== ''); return raw ? parseNumber(row[raw]) : null; }
@@ -290,7 +328,6 @@ function renderAnomalyChart() {
       ['bmiModerateObesity', '中度肥胖：30 ≤ BMI < 35'],
       ['bmiSevereObesity', '重度肥胖：BMI ≥35']
     ]],
-    ['hyperuricaemia', '尿酸異常', '男性 >7、女性 >6 mg/dL', [['hyperuricaemia', '高尿酸：男性 >7、女性 >6 mg/dL']]],
     ['metabolicSyndrome', '代謝症候群風險', '五項指標中符合三項（含）以上', [
       ['metabolicAbdominal', '腹部肥胖：男性腰圍 ≥90 公分、女性腰圍 ≥80 公分'],
       ['metabolicBloodPressure', '血壓偏高：收縮壓 ≥130、舒張壓 ≥85 mmHg，或服用高血壓藥物'],
@@ -311,8 +348,7 @@ function renderAnomalyChart() {
     const detailMarkup = item.detailCounts.map((detail) => `<li><span>${esc(detail.label)}</span><b>${detail.count} 人</b></li>`).join('');
     return `<div class="anomaly-row" title="${esc(item.note)}"><div class="anomaly-label"><strong>${esc(item.label)}</strong><span>${item.count} 人／${percent}%</span></div><div class="anomaly-track"><i style="width:${width}%"></i></div><ul class="anomaly-subdetails">${detailMarkup}</ul></div>`;
   }).join('') : `<div class="chart-empty"><div class="empty-chart">${icon.chart}</div><strong>匯入報告後顯示疾病統計</strong><span>依本頁公開門檻計算異常人數</span></div>`;
-  const footnotes = total ? `<div class="anomaly-footnotes"><span>統計母數：${total} 位不重複序號</span><span>柱狀圖依異常人數由高至低排列</span><span>圖表為篩檢提示，不等同醫療診斷</span></div>` : '';
-  return `<div class="anomaly-panel"><div class="anomaly-heading"><div><h3>主要異常項目</h3><p>依匯入健檢數值與 WHO／國際公開健康門檻統計異常人數</p><small class="anomaly-disclaimer">本網站僅統計部分異常，如：代謝症候群、肝功能異常、血糖異常、BMI異常、血脂異常、尿酸異常……等。</small></div><span class="chart-legend"><i></i>異常人數／占比</span></div><div class="anomaly-chart">${content}</div>${footnotes}</div>`;
+  return `<div class="anomaly-panel"><div class="anomaly-heading"><div><h3>主要異常項目</h3><p>依匯入健檢數值與 WHO／國際公開健康門檻統計異常人數</p><small class="anomaly-disclaimer">本網站僅統計「勞工健康保護規則第16條」數值異常，如：代謝症候群、肝功能異常、血糖異常、BMI異常、血脂異常……等。</small></div><span class="chart-legend"><i></i>異常人數／占比</span></div><div class="anomaly-chart">${content}</div></div>`;
 }
 
 function renderImportPanel() {
@@ -625,6 +661,7 @@ function bindEvents() {
   document.querySelector('#ruleSearch')?.addEventListener('input', (event) => { const query = event.target.value.toLowerCase(); document.querySelectorAll('.rule-table tbody tr').forEach((row) => { row.hidden = query && !row.textContent.toLowerCase().includes(query); }); });
   document.querySelectorAll('[data-risk]').forEach((input) => input.addEventListener('input', (event) => { const key = event.target.dataset.risk; state.risk[key] = event.target.type === 'checkbox' ? event.target.checked : event.target.value; }));
   document.querySelector('#calculateRisk')?.addEventListener('click', () => { state.risk.result = calculateFramingham(state.risk); state.risk.status = state.risk.result.error ? '資料不足' : '已計算'; render(); });
+  document.querySelector('#exportDashboard')?.addEventListener('click', exportDashboardReport);
   document.querySelector('#exportExcel')?.addEventListener('click', exportResults);
   document.querySelectorAll('.group-rule').forEach((button) => button.addEventListener('click', () => { const row = button.closest('tr'); if (row?.dataset.ruleName) { state.ruleGroupName = row.dataset.ruleName; state.ruleGroupOriginalName = row.dataset.ruleName; state.ruleAliasDraft = (state.ruleAliases[row.dataset.ruleName] || []).join(', '); state.ruleGroupEdit = true; state.ruleGroupEditing = false; state.ruleEditDraft = state.rules.filter((rule) => rule.name.trim() === row.dataset.ruleName.trim()).map((rule) => ({ ...rule })); state.ruleAddOpen = false; render(); } }));
   document.querySelectorAll('.delete-rule-group').forEach((button) => button.addEventListener('click', () => { const row = button.closest('tr'); const name = row?.dataset.ruleName; if (!name || !window.confirm(`確定要刪除「${name}」的全部分級規則嗎？`)) return; state.rules = state.rules.filter((item) => item.name.trim() !== name.trim()); delete state.ruleAliases[name]; saveRuleConfiguration(); render(); scrollToRules(); }));
@@ -732,6 +769,39 @@ async function saveWorkbookWithPicker(workbook, filename) {
   XLSX.writeFile(workbook, filename);
 }
 
+async function saveBinaryWithPicker(data, filename, mimeType) {
+  if (typeof window.showSaveFilePicker === 'function') {
+    try {
+      const handle = await window.showSaveFilePicker({ suggestedName: filename, types: [{ description: 'Excel 活頁簿', accept: { [mimeType]: ['.xlsx'] } }] });
+      const writable = await handle.createWritable();
+      await writable.write(data);
+      await writable.close();
+      return;
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+    }
+  }
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([data], { type: mimeType }));
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(link.href);
+}
+
+async function createDashboardChartPng(categories) {
+  const width = 1200; const rowHeight = 72; const height = 150 + categories.length * rowHeight;
+  const max = Math.max(...categories.map((item) => item.count), 1);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" rx="28" fill="#fffdf7"/><text x="52" y="66" font-family="Arial,'Noto Sans TC',sans-serif" font-size="32" font-weight="700" fill="#24584b">主要異常項目</text><text x="52" y="104" font-family="Arial,'Noto Sans TC',sans-serif" font-size="18" fill="#718079">依匯入健檢數值與公開健康門檻統計異常人數</text>${categories.map((item, index) => { const y = 155 + index * rowHeight; const barWidth = item.count ? Math.max(12, item.count / max * 720) : 4; return `<text x="52" y="${y + 24}" font-family="Arial,'Noto Sans TC',sans-serif" font-size="21" font-weight="700" fill="#365f52">${item.label}</text><rect x="270" y="${y}" width="720" height="27" rx="13" fill="#edf2ed"/><rect x="270" y="${y}" width="${barWidth}" height="27" rx="13" fill="#c58f42"/><text x="1015" y="${y + 23}" font-family="Arial,'Noto Sans TC',sans-serif" font-size="21" font-weight="700" fill="#a47431">${item.count} 人／${item.percent}%</text>`; }).join('')}</svg>`;
+  const image = new Image();
+  const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = reject; image.src = dataUrl; });
+  const canvas = document.createElement('canvas'); canvas.width = width * 2; canvas.height = height * 2;
+  const context = canvas.getContext('2d'); context.scale(2, 2); context.drawImage(image, 0, 0, width, height);
+  return canvas.toDataURL('image/png');
+}
+
 async function exportResults() {
   if (!state.sourceRows.length && !state.results.length) return;
   const rows = buildGradingResultRows();
@@ -766,6 +836,38 @@ async function exportResults() {
   const sourceBase = (state.fileName || '健檢報告').replace(/\.[^.]+$/, '').replace(/[^A-Za-z0-9\u4e00-\u9fff_-]+/g, '_').slice(0, 60) || '健檢報告';
   const exportStamp = (state.uploadedAt || new Date().toISOString()).replace(/[-:T]/g, '').slice(0, 14);
   await saveWorkbookWithPicker(workbook, `職健導航_分級結果_${sourceBase}_${exportStamp}.xlsx`);
+}
+
+async function exportDashboardReport() {
+  const rows = importedRowsWithSerial();
+  if (!rows.length) return;
+  const countBy = (key) => new Set(rows.filter((row) => healthConditionFlags(row)[key]).map(serialKey)).size;
+  const total = importedSerialCount();
+  const categories = [
+    ['血壓異常', countBy('bloodPressure'), '依收縮壓／舒張壓公開成人血壓分級門檻'],
+    ['肝功能異常', countBy('liver'), 'SGPT／ALT >40 U/L'],
+    ['血糖異常', countBy('hyperglycaemia'), '空腹血糖 ≥126 mg/dL 或糖化血色素 ≥6.5%'],
+    ['血脂異常', new Set(rows.filter((row) => healthConditionFlags(row).dyslipidaemia).map(serialKey)).size, '總膽固醇、LDL、三酸甘油脂或 HDL 達異常門檻'],
+    ['BMI 異常', countBy('obesity'), 'BMI ≥24'],
+    ['代謝症候群風險', countBy('metabolicSyndrome'), '五項指標中符合三項（含）以上']
+  ].map(([label, count, note]) => ({ label, count, percent: total ? Math.round(count / total * 100) : 0, note })).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, 'zh-Hant'));
+  const summary = [['項目', '異常人數', '異常比例 (%)', '統計說明'], ['目前匯入', total, 100, '依不重複序號統計'], ...categories.map((item) => [item.label, item.count, item.percent, item.note])];
+  const imageData = await createDashboardChartPng(categories);
+  const workbook = new ExcelJS.Workbook();
+  const summarySheet = workbook.addWorksheet('總表摘要');
+  summarySheet.addRows(summary);
+  summarySheet.columns = [{ width: 18 }, { width: 14 }, { width: 16 }, { width: 54 }];
+  summarySheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  summarySheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '24584B' } };
+  summarySheet.views = [{ state: 'frozen', ySplit: 1 }];
+  const chartSheet = workbook.addWorksheet('總表圖表');
+  chartSheet.getColumn(1).width = 4; chartSheet.getColumn(2).width = 18;
+  chartSheet.getCell('B2').value = '主要異常項目圖表'; chartSheet.getCell('B2').font = { bold: true, size: 16, color: { argb: '24584B' } };
+  const imageId = workbook.addImage({ base64: imageData, extension: 'png' });
+  chartSheet.addImage(imageId, { tl: { col: 1, row: 3 }, ext: { width: 900, height: 520 } });
+  const stamp = (state.uploadedAt || new Date().toISOString()).replace(/[-:T]/g, '').slice(0, 14);
+  const buffer = await workbook.xlsx.writeBuffer();
+  await saveBinaryWithPicker(buffer, `職健導航_總表報告_${stamp}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 }
 
 render();
