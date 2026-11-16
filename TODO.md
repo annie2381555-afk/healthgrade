@@ -120,3 +120,4 @@
 - [x] 首頁「職健導航」旁新增標語「讓臨場照護更有方向」。
 - [x] 使用流程 STEP 2 的「去識別化」套用紅色粗體，提醒使用者先完成資料去識別化。
 - [x] 將首頁醫護人員插圖納入 public/assets/healthcare-navigation.webp，正式 Cloudflare 部署不再依賴預覽環境的暫存圖片網址。
+- [x] 新增 public/ads.txt，使用 AdSense 發布商 ID 供正式網站根目錄驗證。
